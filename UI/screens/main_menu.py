@@ -1,21 +1,17 @@
-# screens/dummy_screen.py
 import pygame
+from UI.screens.screen import Screen
 
-class DummyScreen:
+class MainMenuScreen(Screen):
     def __init__(self, manager):
-        self.manager = manager
-        self.color = (100, 100, 255)
+        super().__init__(manager)
+        self.screen_id = 0
+        self.font = pygame.font.SysFont(None, 48)
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            print("Space pressed on DummyScreen!")
-
-    def update(self):
-        pass  # 可以添加动画、计时器等逻辑
+            self.swift(1)  # 切换到战斗界面
 
     def draw(self, screen):
-        screen.fill(self.color)
-        # 简单地显示一段文字
-        font = pygame.font.SysFont(None, 36)
-        text = font.render("This is DummyScreen", True, (255, 255, 255))
-        screen.blit(text, (50, 50))
+        screen.fill((30, 30, 30))
+        text = self.font.render("Press SPACE to start battle", True, (255, 255, 255))
+        screen.blit(text, (100, 200))

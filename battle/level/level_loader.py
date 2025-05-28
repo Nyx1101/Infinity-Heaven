@@ -10,7 +10,6 @@ def load_level_1():
         3: Grid(3, "063.png"),
         4: Grid(4, "062.png"),
         5: Grid(5, "064.png")
-
     }
 
     MAP_LAYOUT = [
