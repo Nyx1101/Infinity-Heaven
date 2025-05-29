@@ -1,20 +1,13 @@
 import pygame
-from pathlib import Path
+
 
 class Map:
     def __init__(self, tile_definitions, layout, tile_size, asset_dir):
-        """
-        tile_definitions: dict[int, GridTile] — 每个 tile id 对应的图块
-        layout: List[List[int]] — 关卡数组，如 [[1, 1], [0, 2]]
-        tile_size: int — 每个格子的像素大小
-        asset_dir: Path — 图像文件路径
-        """
         self.tile_definitions = tile_definitions
         self.layout = layout
         self.tile_size = tile_size
         self.asset_dir = "assets/image"
 
-        # 提前加载图像资源
         self.tile_images = {}
         for tile in tile_definitions.values():
             image_path = asset_dir / tile.image_name

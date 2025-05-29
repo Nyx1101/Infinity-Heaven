@@ -1,31 +1,36 @@
+import time
+from battle.level.level_loader import LevelLoader
+from battle.AI.normal_ai import NormalAI
+from entities.enemy import EnemyFactory
 import pygame
-from battle.level.level_loader import load_level_1
-
-# class AIManager:
-#     def __init__(self):
-#         self.ais = []
-#
-#     def register(self, ai):
-#         self.ais.append(ai)
-#
-#     def unregister(self, ai):
-#         if ai in self.ais:
-#             self.ais.remove(ai)
-#
-#     def update_all(self):
-#         for ai in self.ais:
-#             ai.update()
-
 
 class BattleManager:
     def __init__(self):
-        self.map = load_level_1()
-
-    def handle_event(self, event):
-        pass
+        self.loader = LevelLoader()
+        self.map = self.loader.load_level_1_map()
+        self.level_flow = self.loader.load_level_1_enemy()
+        self.enemy_factory = EnemyFactory()
+        self.AIs = []
+        self.start_time = time.time()
 
     def update(self):
-        pass
+        current_time = time.time()-self.start_time
+        result = self.level_flow.pop_next_if_due(current_time)
+
+        if result:
+            new_enemy = self.enemy_factory.create_enemy_by_id(result["id"])
+            ai = NormalAI(new_enemy, result["path"])
+            self.AIs.append(ai)
+
+        for AI in self.AIs:
+            AI.update()
 
     def draw(self, screen):
         self.map.draw(screen)
+        for AI in self.AIs:
+            AI.draw(screen)
+
+
+
+
+

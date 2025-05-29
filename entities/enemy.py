@@ -11,7 +11,33 @@ class EnemyFactory:
             "defense": 0,
             "resistance": 0,
             "attack_speed": 1.5,
-            "sprite_image": "assets/image/038.png",
+            "sprite_image": "assets/image/271.png",
             "type": 0
         }
         return Entity(data)
+
+    @staticmethod
+    def create_orc():
+        data = {
+            "hp": 100,
+            "atk": 20,
+            "speed": 0.6,
+            "defense": 5,
+            "resistance": 2,
+            "attack_speed": 2.0,
+            "sprite_image": "assets/image/271.png",
+            "type": 0
+        }
+        return Entity(data)
+
+    enemy_map = {
+        "000": create_goblin.__func__,
+        "001": create_orc.__func__,
+    }
+
+    @staticmethod
+    def create_enemy_by_id(enemy_id: str) -> Entity:
+        if enemy_id in EnemyFactory.enemy_map:
+            return EnemyFactory.enemy_map[enemy_id]()
+        else:
+            raise ValueError(f"Unknown enemy ID: {enemy_id}")
