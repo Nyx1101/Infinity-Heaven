@@ -1,6 +1,7 @@
 import pygame
 from UI.screens.screen import Screen
 
+
 class MainMenuScreen(Screen):
     def __init__(self, manager):
         super().__init__(manager)

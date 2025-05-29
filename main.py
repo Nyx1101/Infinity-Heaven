@@ -1,5 +1,4 @@
 import pygame
-import sys
 from UI.screen_manager import ScreenManager
 
 pygame.init()

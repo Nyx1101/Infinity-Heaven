@@ -1,6 +1,7 @@
 from UI.screens.screen import Screen
 from battle.battle_manager import BattleManager
 
+
 class BattleScreen(Screen):
     def __init__(self, manager):
         super().__init__(manager)

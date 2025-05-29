@@ -1,6 +1,7 @@
 from UI.screens.main_menu import MainMenuScreen
 from UI.screens.battle import BattleScreen
 
+
 class ScreenManager:
     def __init__(self):
         self.current = None
@@ -41,7 +42,3 @@ class ScreenManager:
     def draw(self, screen):
         if self.current:
             self.current.draw(screen)
-
-    def handle_events(self, events):
-        if self.current_screen:
-            self.current_screen.handle_events(events)

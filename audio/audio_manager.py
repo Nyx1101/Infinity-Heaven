@@ -2,6 +2,7 @@ from pathlib import Path
 import pygame
 from typing import Dict
 
+
 class AudioManager:
     def __init__(self, audio_root: Path):
         pygame.mixer.init()
@@ -53,5 +54,6 @@ class AudioManager:
         pygame.mixer.music.stop()
         self.music_paused = False
 
-    def set_music_volume(self, volume: float):
+    @staticmethod
+    def set_music_volume(volume: float):
         pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))

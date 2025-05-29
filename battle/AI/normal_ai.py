@@ -12,16 +12,16 @@ class NormalAI:
             "controlled": False,
             "blocked": False,
         }
-        self.path = list(path)  # 确保是可变列表
+        self.path = list(path)
         self.sprite = pygame.image.load(entity.sprite_image).convert_alpha()
         self.dead = False
         self.score = False
-        # 初始位置：格子左上角像素坐标，不偏移中心
+
         self.position = pygame.Vector2(
             self.path[0][0] * TILE_SIZE,
             self.path[0][1] * TILE_SIZE
         )
-        self.speed_grid_per_sec = entity.speed  # 格子/秒速度
+        self.speed_grid_per_sec = entity.speed
         self.speed_pixel_per_frame = self.speed_grid_per_sec * TILE_SIZE / FPS
 
     def attack(self, unit):
@@ -89,16 +89,14 @@ class NormalAI:
     def draw(self, screen):
         if not self.dead:
             screen.blit(self.sprite, self.position)
-            # 计算血条位置（怪物底部下方一点）
+
             bar_width = 50
             bar_height = 5
             x = self.position.x
-            y = self.position.y + self.sprite.get_height() + 2  # 图像底部向下偏移2像素
+            y = self.position.y + self.sprite.get_height() + 2
 
-            # 背景（红色血槽底）
             pygame.draw.rect(screen, (255, 0, 0), (x, y, bar_width, bar_height))
 
-            # 当前血量（绿色）
-            hp_ratio = max(self.blackboard["hp"] / self.entity.hp, 0)  # 防止负数
+            hp_ratio = max(self.blackboard["hp"] / self.entity.hp, 0)
             green_width = int(bar_width * hp_ratio)
             pygame.draw.rect(screen, (0, 255, 0), (x, y, green_width, bar_height))
