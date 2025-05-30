@@ -15,6 +15,8 @@ class Map:
             self.tile_images[tile.id] = pygame.transform.scale(image, (tile_size, tile_size))
 
     def draw(self, surface):
+        bottom_y = surface.get_height() - self.tile_size
+        surface.fill((0, 0, 0), pygame.Rect(0, bottom_y, surface.get_width(), self.tile_size))
         for row_idx, row in enumerate(self.layout):
             for col_idx, tile_id in enumerate(row):
                 img = self.tile_images.get(tile_id)

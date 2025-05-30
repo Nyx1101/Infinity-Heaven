@@ -7,12 +7,14 @@ class EnemyFactory:
         data = {
             "hp": 50,
             "atk": 10,
+            "atk_type": 0,
             "speed": 0.8,
             "defense": 0,
             "resistance": 0,
             "attack_speed": 1.5,
             "sprite_image": "assets/image/271.png",
-            "type": 0
+            "type": 0,
+            "id": "000"
         }
         return Entity(data)
 
@@ -21,12 +23,14 @@ class EnemyFactory:
         data = {
             "hp": 100,
             "atk": 20,
+            "atk_type": 0,
             "speed": 0.6,
             "defense": 5,
             "resistance": 2,
             "attack_speed": 2.0,
             "sprite_image": "assets/image/271.png",
-            "type": 0
+            "type": 0,
+            "id": "001"
         }
         return Entity(data)
 

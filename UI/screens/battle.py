@@ -8,6 +8,9 @@ class BattleScreen(Screen):
         self.screen_id = 1
         self.battle = BattleManager()
 
+    def handle_event(self, screen, event):
+        self.battle.handle_event(screen, event)
+
     def update(self):
         self.battle.update()
 

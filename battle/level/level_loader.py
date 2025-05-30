@@ -42,8 +42,15 @@ class LevelLoader:
 
     def load_level_1_enemy(self):
         spawn_schedule = [
-            {"id": "001", "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
+            {"id": "000", "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
             {"id": "001", "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
             {"id": "001", "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
         ]
         return LevelFlow(spawn_schedule)
+
+    def load_character(self):
+        formation = [
+            {"id": "100"},
+            {"id": "101"}
+        ]
+        return formation

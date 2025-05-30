@@ -7,12 +7,14 @@ class CharacterFactory:
         data = {
             "hp": 120,
             "atk": 15,
+            "atk_type": 0,
             "speed": 0,
             "defense": 10,
             "resistance": 5,
             "attack_speed": 1.2,
             "sprite_image": "assets/image/206.png",
-            "type": 1  # 1 表示玩家角色
+            "type": 1,
+            "id": "100"
         }
         return Entity(data)
 
@@ -21,12 +23,14 @@ class CharacterFactory:
         data = {
             "hp": 80,
             "atk": 18,
+            "atk_type": 0,
             "speed": 0,
-            "defense": 3,
+            "defense": 10,
             "resistance": 2,
             "attack_speed": 1.8,
             "sprite_image": "assets/image/206.png",
-            "type": 1
+            "type": 1,
+            "id": "101"
         }
         return Entity(data)
 
@@ -35,12 +39,14 @@ class CharacterFactory:
         data = {
             "hp": 70,
             "atk": 25,
+            "atk_type": 0,
             "speed": 0,
-            "defense": 2,
+            "defense": 10,
             "resistance": 10,
             "attack_speed": 2.0,
             "sprite_image": "assets/image/206.png",
-            "type": 1
+            "type": 1,
+            "id": "102"
         }
         return Entity(data)
 

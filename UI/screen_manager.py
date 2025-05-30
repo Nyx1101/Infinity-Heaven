@@ -31,9 +31,9 @@ class ScreenManager:
         else:
             print(f"[Error] Invalid screen id: {id}")
 
-    def handle_event(self, event):
+    def handle_event(self, screen, event):
         if self.current:
-            self.current.handle_event(event)
+            self.current.handle_event(screen, event)
 
     def update(self):
         if self.current:

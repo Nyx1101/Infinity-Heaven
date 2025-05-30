@@ -5,7 +5,7 @@ class Screen:
     def swift(self, id=None):
         self.manager.switch_to(id)
 
-    def handle_event(self, event):
+    def handle_event(self, screen, event):
         pass
 
     def update(self):

@@ -2,7 +2,7 @@ import pygame
 from UI.screen_manager import ScreenManager
 
 pygame.init()
-screen = pygame.display.set_mode((704, 448))
+screen = pygame.display.set_mode((704, 512))
 pygame.display.set_caption("Infinity Heaven")
 clock = pygame.time.Clock()
 
@@ -13,7 +13,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        manager.handle_event(event)
+        manager.handle_event(screen, event)
 
     manager.update()
     manager.draw(screen)
