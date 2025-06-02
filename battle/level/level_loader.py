@@ -3,13 +3,30 @@ from battle.level.grid import Grid
 from battle.level.map import Map
 from battle.level.level_flow import LevelFlow
 
+level1_map_layout = [
+    [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4],
+    [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
+    [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
+    [5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4],
+    [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
+    [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
+    [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4]
+]
+level1_schedule = [
+    {"id": "000", "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
+    {"id": "001", "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
+    {"id": "001", "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
+]
+
 
 class LevelLoader:
-    def __init__(self):
+    def __init__(self, level):
         self.asset_dir = Path("assets/image")
         self.tile_size = 64
+        self.level = level
 
-    def load_tile_defs(self):
+    @staticmethod
+    def load_tile_defs():
         return {
             0: Grid(0, "038.png"),
             1: Grid(1, "040.png"),
@@ -20,15 +37,8 @@ class LevelLoader:
         }
 
     def load_map_layout(self):
-        return [
-            [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4],
-            [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
-            [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
-            [5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4],
-            [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
-            [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
-            [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4]
-        ]
+        if self.level == 1:
+            return level1_map_layout
 
     def load_level_1_map(self):
         tile_defs = self.load_tile_defs()
@@ -40,17 +50,6 @@ class LevelLoader:
             asset_dir=self.asset_dir
         )
 
-    def load_level_1_enemy(self):
-        spawn_schedule = [
-            {"id": "000", "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
-            {"id": "001", "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
-            {"id": "001", "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
-        ]
-        return LevelFlow(spawn_schedule)
-
-    def load_character(self):
-        formation = [
-            {"id": "100"},
-            {"id": "101"}
-        ]
-        return formation
+    def load_enemy(self):
+        if self.level == 1:
+            return LevelFlow(level1_schedule)

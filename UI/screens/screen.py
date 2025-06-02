@@ -2,8 +2,8 @@ class Screen:
     def __init__(self, manager):
         self.manager = manager
 
-    def swift(self, id=None):
-        self.manager.switch_to(id)
+    def swift(self, id=None, data=None):
+        self.manager.switch_to(id, data)
 
     def handle_event(self, screen, event):
         pass

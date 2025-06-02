@@ -1,5 +1,7 @@
 from UI.screens.main_menu import MainMenuScreen
+from UI.screens.stage_select import StageSelectScreen
 from UI.screens.battle import BattleScreen
+# from UI.screens.character_list import
 
 
 class ScreenManager:
@@ -10,11 +12,14 @@ class ScreenManager:
         self.id_map = {
             0: lambda: MainMenuScreen(self),
             1: lambda: BattleScreen(self),
+            2: lambda: StageSelectScreen(self),
+            # 3: lambda: CharacterScreen(self),
+            # 4: lambda: DifficultySelectScreen(self)
         }
 
         self.switch_to(0)
 
-    def switch_to(self, id=None):
+    def switch_to(self, id=None, data=None):
         if self.current:
             if hasattr(self.current, "on_exit"):
                 self.current.on_exit()
@@ -28,8 +33,10 @@ class ScreenManager:
 
         if id in self.id_map:
             self.current = self.id_map[id]()
+            if data is not None:
+                self.current.data = data
         else:
-            print(f"[Error] Invalid screen id: {id}")
+            print(f"[Error] Invalid screen id: {id}, data: {data}")
 
     def handle_event(self, screen, event):
         if self.current:

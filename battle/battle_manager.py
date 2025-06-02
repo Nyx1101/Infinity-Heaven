@@ -1,34 +1,45 @@
-import time
+from battle.timer import Timer
 from battle.level.level_loader import LevelLoader
 from battle.AI.normal_ai import NormalAI
 from entities.enemy import EnemyFactory
 from entities.character import CharacterFactory
 from battle.AI.elite_ai import CharacterAI
+from battle.event_handler import EventHandler
+from entities.modifier import Modifier
 import pygame
 
 TILE_SIZE = 64
 
 
 class BattleManager:
-    def __init__(self):
-        self.loader = LevelLoader()
+    def __init__(self, level, selected_items, formation):
+        self.modifier = Modifier(selected_items)
+        self.loader = LevelLoader(level)
         self.map = self.loader.load_level_1_map()
-        self.level_flow = self.loader.load_level_1_enemy()
-        self.enemy_factory = EnemyFactory()
+        self.level_flow = self.loader.load_enemy()
+        self.enemy_factory = EnemyFactory(self.modifier)
         self.character_factory = CharacterFactory()
         self.AIs = []
+        self.timer = Timer()
+        self.resource = 10
+        self.event_handler = EventHandler(self)
         self.units = []
-        formation = self.loader.load_character()
-        for data in formation:
+        self.formation = formation
+        for data in self.formation:
             char_id = data["id"]
-            character_entity = CharacterFactory.create_character_by_id(char_id)
-            self.units.append(character_entity)
-        self.start_time = time.time()
+            character_entity = CharacterFactory.create_character_by_id(char_id, data["skill_id"], data["artefact_id"])
+            unit_info = {
+                "entity": character_entity,
+                "death_time": None
+            }
+            self.units.append(unit_info)
+        self.start_time = self.timer.time()
         self.dragging_unit = None
         self.drag_offset = pygame.Vector2(0, 0)
+        self.selected_unit_ai = None
 
     def get_all_characters(self):
-        return [ai for ai in self.AIs if ai.entity.type == 1]
+        return [ai for ai in self.AIs if ai.entity.type == 1 or ai.entity.type == 2]
 
     def get_all_enemies(self):
         return [ai for ai in self.AIs if ai.entity.type == 0]
@@ -39,60 +50,44 @@ class BattleManager:
         bottom_offset = 0
         right_offset = 0
 
-        for i, unit in enumerate(reversed(self.units)):  # 从右到左排列
-            sprite = pygame.image.load(unit.sprite_image).convert_alpha()
+        current_time = self.timer.time()
+
+        for i, unit in enumerate(reversed(self.units)):
+            sprite = pygame.image.load(unit["entity"].sprite_image).convert_alpha()
             x = screen.get_width() - right_offset - (sprite_size + spacing) * (i + 1)
             y = screen.get_height() - sprite_size - bottom_offset
+
             screen.blit(sprite, (x, y))
 
+            death_time = unit["death_time"]
+            redeploy_time = unit["entity"].redeployment_time
+
+            if death_time is not None:
+                elapsed = current_time - death_time
+                progress = min(elapsed / redeploy_time, 1.0)
+
+                overlay = pygame.Surface((sprite_size, sprite_size), pygame.SRCALPHA)
+                grayness = int((1.0 - progress) * 180)
+                overlay.fill((50, 50, 50, grayness))
+                screen.blit(overlay, (x, y))
+
+                if progress < 1.0:
+                    cooldown_height = int((1.0 - progress) * sprite_size)
+                    cooldown_bar = pygame.Surface((sprite_size, cooldown_height), pygame.SRCALPHA)
+                    cooldown_bar.fill((0, 0, 0, 120))
+                    screen.blit(cooldown_bar, (x, y))
+
     def handle_event(self, screen, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-
-            # 检查是否点击到了右下角展示的角色图标（从右到左）
-            for i, unit in enumerate(reversed(self.units)):
-                sprite = pygame.image.load(unit.sprite_image).convert_alpha()
-                sprite_rect = sprite.get_rect()
-                x = screen.get_width() - 0 - (64 + 0) * (i + 1)
-                y = screen.get_height() - 64 - 0
-                sprite_rect.topleft = (x, y)
-
-                if sprite_rect.collidepoint(mouse_pos):
-                    self.dragging_unit = unit
-                    self.drag_offset = pygame.Vector2(mouse_pos) - pygame.Vector2(x, y)
-                    break
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if self.dragging_unit:
-                mouse_pos = pygame.mouse.get_pos()
-                tile_x = mouse_pos[0] // TILE_SIZE
-                tile_y = mouse_pos[1] // TILE_SIZE
-
-                if 0 <= tile_y < len(self.map.layout) and 0 <= tile_x < len(self.map.layout[0]):
-                    tile_value = self.map.layout[tile_y][tile_x]
-                    if tile_value in (0, 2):
-                        # 允许部署：更新单位位置
-                        self.dragging_unit.position = pygame.Vector2(
-                            tile_x * TILE_SIZE,
-                            tile_y * TILE_SIZE
-                        )
-                        new_unit = self.character_factory.create_character_by_id(self.dragging_unit.id)
-                        ai = CharacterAI(new_unit, tile_x, tile_y)
-                        self.AIs.append(ai)
-                        self.units.remove(self.dragging_unit)
-                    else:
-                        pass
-
-            self.dragging_unit = None
-
+        self.event_handler.handle_event(screen, event)
 
     def update(self):
-        current_time = time.time()-self.start_time
+        self.resource = min(self.resource + 1 / 60, 99)
+        current_time = self.timer.time()-self.start_time
         result = self.level_flow.pop_next_if_due(current_time)
 
         if result:
             new_enemy = self.enemy_factory.create_enemy_by_id(result["id"])
-            ai = NormalAI(new_enemy, result["path"])
+            ai = NormalAI(new_enemy, self.timer, result["path"])
             self.AIs.append(ai)
 
         for AI in self.get_all_enemies():
@@ -103,13 +98,22 @@ class BattleManager:
                 self.AIs.remove(AI)
 
         for AI in self.get_all_characters():
-            AI.update()
+            if AI.entity.type == 2:
+                AI.update(self.get_all_characters())
+            else:
+                AI.update(self.get_all_enemies())
             if AI.dead:
+                unit_info = {
+                    "entity": AI.entity,
+                    "death_time": self.timer.time()
+                }
+                self.units.append(unit_info)
                 self.AIs.remove(AI)
 
     def draw(self, screen):
         self.map.draw(screen)
         self.draw_characters_in_corner(screen)
+        self.event_handler.draw_selected_unit_ui(screen)
         for AI in self.AIs:
             AI.draw(screen)
         if self.dragging_unit:

@@ -1,64 +1,31 @@
 from entities.entity import Entity
+from entities.artefact import Artefact
+from utility.data import CHARACTER_DATA
 
 
 class CharacterFactory:
-    @staticmethod
-    def create_warrior():
-        data = {
-            "hp": 120,
-            "atk": 15,
-            "atk_type": 0,
-            "speed": 0,
-            "defense": 10,
-            "resistance": 5,
-            "attack_speed": 1.2,
-            "sprite_image": "assets/image/206.png",
-            "type": 1,
-            "id": "100"
-        }
-        return Entity(data)
-
-    @staticmethod
-    def create_archer():
-        data = {
-            "hp": 80,
-            "atk": 18,
-            "atk_type": 0,
-            "speed": 0,
-            "defense": 10,
-            "resistance": 2,
-            "attack_speed": 1.8,
-            "sprite_image": "assets/image/206.png",
-            "type": 1,
-            "id": "101"
-        }
-        return Entity(data)
-
-    @staticmethod
-    def create_mage():
-        data = {
-            "hp": 70,
-            "atk": 25,
-            "atk_type": 0,
-            "speed": 0,
-            "defense": 10,
-            "resistance": 10,
-            "attack_speed": 2.0,
-            "sprite_image": "assets/image/206.png",
-            "type": 1,
-            "id": "102"
-        }
-        return Entity(data)
-
-    character_map = {
-        "100": create_warrior.__func__,
-        "101": create_archer.__func__,
-        "102": create_mage.__func__,
+    SKILL_MAP = {
+        ("100", 1): (30, 20),
+        ("101", 1): (20, 20),
+        ("102", 1): (25, 15),
     }
 
     @staticmethod
-    def create_character_by_id(char_id: str) -> Entity:
-        if char_id in CharacterFactory.character_map:
-            return CharacterFactory.character_map[char_id]()
-        else:
+    def create_character_by_id(char_id: str, skill_id: int, artefact_id: str) -> Entity:
+        if char_id not in CHARACTER_DATA:
             raise ValueError(f"Unknown character ID: {char_id}")
+
+        character = CHARACTER_DATA[char_id].copy()
+
+        skill_key = (char_id, skill_id)
+        if skill_key in CharacterFactory.SKILL_MAP:
+            cd, duration = CharacterFactory.SKILL_MAP[skill_key]
+            character["cd"] = cd
+            character["duration"] = duration
+        else:
+            character["cd"] = 0
+            character["duration"] = 0
+
+        Artefact(artefact_id).apply(character)
+
+        return Entity(character)
