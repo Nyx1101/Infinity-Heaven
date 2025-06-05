@@ -2,20 +2,12 @@ from pathlib import Path
 from battle.level.grid import Grid
 from battle.level.map import Map
 from battle.level.level_flow import LevelFlow
+from utility.data import LEVEL_MAPS
 
-level1_map_layout = [
-    [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4],
-    [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
-    [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
-    [5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4],
-    [2, 1, 0, 0, 2, 0, 2, 2, 2, 0, 2],
-    [2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2],
-    [5, 1, 2, 2, 2, 0, 2, 2, 2, 0, 4]
-]
 level1_schedule = [
-    {"id": "000", "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
-    {"id": "001", "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
-    {"id": "001", "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
+    {"id": 200, "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
+    {"id": 201, "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
+    {"id": 201, "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
 ]
 
 
@@ -28,21 +20,17 @@ class LevelLoader:
     @staticmethod
     def load_tile_defs():
         return {
-            0: Grid(0, "038.png"),
-            1: Grid(1, "040.png"),
-            2: Grid(2, "061.png"),
-            3: Grid(3, "063.png"),
-            4: Grid(4, "062.png"),
-            5: Grid(5, "064.png")
+            0: Grid(0, "grid0.png"),
+            1: Grid(1, "grid1.png"),
+            2: Grid(2, "grid2.png"),
+            3: Grid(3, "grid3.png"),
+            4: Grid(4, "grid4.png"),
+            5: Grid(5, "grid5.png")
         }
 
-    def load_map_layout(self):
-        if self.level == 1:
-            return level1_map_layout
-
-    def load_level_1_map(self):
+    def load_map(self):
         tile_defs = self.load_tile_defs()
-        layout = self.load_map_layout()
+        layout = LEVEL_MAPS[self.level]
         return Map(
             tile_definitions=tile_defs,
             layout=layout,
@@ -51,5 +39,5 @@ class LevelLoader:
         )
 
     def load_enemy(self):
-        if self.level == 1:
+        if self.level == 7:
             return LevelFlow(level1_schedule)

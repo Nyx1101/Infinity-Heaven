@@ -4,16 +4,17 @@ from UI.screens.screen import Screen
 
 
 class MainMenuScreen(Screen):
-    def __init__(self, manager):
+    def __init__(self, manager, data=None):
         super().__init__(manager)
         self.screen_id = 0
 
         # 加载背景和 logo
         # 原始加载
-        raw_background = pygame.image.load("assets/image/background.jpg").convert()
+        raw_background = pygame.image.load("assets/image/img.png").convert()
         # 缩放到屏幕尺寸（704x512）
         self.background = pygame.transform.scale(raw_background, (704, 512))
-        # self.logo = pygame.image.load("assets/image/logo.png").convert_alpha()
+        raw_logo = pygame.image.load("assets/image/logo.png").convert_alpha()
+        self.logo = pygame.transform.scale(raw_logo, (192, 192))
 
         # 字体
         self.font = pygame.font.SysFont(None, 48)
@@ -34,9 +35,8 @@ class MainMenuScreen(Screen):
     def draw(self, screen):
         screen.blit(self.background, (0, 0))
 
-        # Logo 居中上方
-        # logo_rect = self.logo.get_rect(center=(screen.get_width() // 2, 120))
-        # screen.blit(self.logo, logo_rect)
+        logo_rect = self.logo.get_rect(center=(screen.get_width() // 2, 160))
+        screen.blit(self.logo, logo_rect)
 
         # Start 按钮
         pygame.draw.rect(screen, (70, 130, 180), self.start_button)

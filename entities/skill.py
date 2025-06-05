@@ -1,9 +1,13 @@
-from battle.AI.elite_ai import CharacterAI
+from battle.AI.character_ai import CharacterAI
 
 
 class SkillBehavior:
     @property
     def description(self):
+        return None
+
+    @property
+    def icon(self):
         return None
 
     def trigger_skill(self, ai: CharacterAI):
@@ -20,6 +24,10 @@ class BattleCry(SkillBehavior):
     @property
     def description(self):
         return "Battle Cry", "Increase attack and defense for 30%."
+
+    @property
+    def icon(self):
+        return "assets/image/skill1.png"
 
     def trigger_skill(self, ai):
         ai.atk += ai.entity.atk * 0.3
@@ -39,6 +47,10 @@ class LastStand(SkillBehavior):
     @property
     def description(self):
         return "Last Stand", "Warrior won't die for 10 seconds, obtain a gradually decaying 200% attack, retreat after skill ends."
+
+    @property
+    def icon(self):
+        return "assets/image/skill2.png"
 
     def trigger_skill(self, ai):
         ai.atk += ai.entity.atk * 2
@@ -62,6 +74,10 @@ class TwinStrike(SkillBehavior):
     def description(self):
         return "Twin Strike", "Increase 20% attack, attack twice every time."
 
+    @property
+    def icon(self):
+        return "assets/image/skill3.png"
+
     def trigger_skill(self, ai: CharacterAI):
         ai.atk += ai.entity.atk * 0.2
         if ai.count is not None:
@@ -84,15 +100,14 @@ class RainOfDestruction(SkillBehavior):
     def description(self):
         return "Rain of Destruction", "Attack all enemy in the battlefield causing 300% attack damage. Stun for 5s after skill released."
 
+    @property
+    def icon(self):
+        return "assets/image/skill4.png"
+
     def trigger_skill(self, ai: CharacterAI):
         ai.atk += ai.entity.atk * 2
-
-    def skill_attack(self, ai: CharacterAI, units):
-        target = ai.search_enemy(units)
-        if target is not None:
-            ai.normal_attack(target)
-
-    def end_skill(self, ai: CharacterAI):
+        for enemy in ai.manager.get_all_enemies():
+            ai.normal_attack(enemy)
         ai.atk -= ai.entity.atk * 2
 
 
@@ -101,7 +116,12 @@ class ArcaneExplosion(SkillBehavior):
     def description(self):
         return "Arcane Explosion", "250% splash damage and stun for 1s."
 
-    def skill_attack(self, ai, units):
+    @property
+    def icon(self):
+        return "assets/image/skill7.png"
+
+    def trigger_skill(self, ai):
+        units = ai.manager.get_all_enemies()
         ai.atk += ai.entity.atk * 1.5
         target = ai.search_enemy(units)
         if target is not None:
@@ -120,6 +140,10 @@ class ManaTempest(SkillBehavior):
     @property
     def description(self):
         return "Mana Tempest", "Attack speed +100%, attack +50%, hit 3 targets. Stun 20s after."
+
+    @property
+    def icon(self):
+        return "assets/image/skill8.png"
 
     def trigger_skill(self, ai):
         ai.atk_spd /= 2
@@ -148,6 +172,10 @@ class IronRenewal(SkillBehavior):
     def description(self):
         return "Iron Renewal", "Restore 30% of own HP."
 
+    @property
+    def icon(self):
+        return "assets/image/skill9.png"
+
     def trigger_skill(self, ai):
         ai.hp = min(ai.entity.hp, ai.hp + ai.entity.hp * 0.3)
 
@@ -156,6 +184,10 @@ class ShieldOfSacrifice(SkillBehavior):
     @property
     def description(self):
         return "Shield of Sacrifice", "Defense +50%, resist +30, stop attacking, heal allies, lose 50% HP and stun 10s after."
+
+    @property
+    def icon(self):
+        return "assets/image/skill10.png"
 
     def trigger_skill(self, ai):
         ai.dfs += ai.entity.defense * 0.5
@@ -184,6 +216,10 @@ class DualGrace(SkillBehavior):
     def description(self):
         return "Dual Grace", "Attack speed +50%, heals 2 allies each attack."
 
+    @property
+    def icon(self):
+        return "assets/image/skill5.png"
+
     def trigger_skill(self, ai):
         ai.atk_spd /= 1.5
 
@@ -198,10 +234,14 @@ class DualGrace(SkillBehavior):
         ai.atk_spd *= 1.5
 
 
-class SanctuarySurge(SkillBehavior):
+class AzureLight(SkillBehavior):
     @property
     def description(self):
-        return "Sanctuary Surge", "Heal 3 allies, attack +100%, all allies HP upper limit +50%, stun self 10s after."
+        return "Azure Light", "Heal 3 allies, attack +100%, all allies HP upper limit +50%, stun self 10s after."
+
+    @property
+    def icon(self):
+        return "assets/image/skill6.png"
 
     def trigger_skill(self, ai):
         ai.atk += ai.entity.atk
@@ -230,6 +270,10 @@ class KillerInstinct(SkillBehavior):
     def description(self):
         return "Killer Instinct", "Increase attack by 50% for 10s, retreat after."
 
+    @property
+    def icon(self):
+        return "assets/image/skill11.png"
+
     def trigger_skill(self, ai):
         ai.atk += ai.entity.atk * 0.5
 
@@ -248,6 +292,10 @@ class ShadowDance(SkillBehavior):
     def description(self):
         return "Shadow Dance", "Deal 300% AoE damage and stun enemies for 5s, retreat after."
 
+    @property
+    def icon(self):
+        return "assets/image/skill12.png"
+
     def trigger_skill(self, ai):
         ai.atk += ai.entity.atk * 2
         units = ai.manager.get_all_enemies()
@@ -258,10 +306,51 @@ class ShadowDance(SkillBehavior):
         ai.dead = True
 
 
+class GentleBreeze(SkillBehavior):
+    @property
+    def description(self):
+        return "Gentle Breeze", "Heal 400 hp for all allies."
+
+    @property
+    def icon(self):
+        return "assets/image/skill17.png"
+
+    def trigger_skill(self, ai):
+        for ally in ai.manager.get_all_characters():
+            ally.hp = min(ally.entity.hp, ally.hp + 400)
+
+
+class SacredSanctuary(SkillBehavior):
+    @property
+    def description(self):
+        return "Sacred Sanctuary", "All allies in the sanctuary will not be defeated until the skill ends, range + 1, retreat after."
+
+    @property
+    def icon(self):
+        return "assets/image/skill18.png"
+
+    def trigger_skill(self, ai):
+        for ally in ai.manager.get_all_characters():
+            ally.entity.hp *= 10000
+            ally.hp *= 10000
+            ally.range += 1
+
+    def end_skill(self, ai):
+        for ally in ai.manager.get_all_characters():
+            ally.entity.hp /= 10000
+            ally.hp /= 10000
+            ally.range -= 1
+        ai.dead = True
+
+
 class BloodTap(SkillBehavior):
     @property
     def description(self):
         return "Blood Tap", "Every attack heals self for 30% of damage."
+
+    @property
+    def icon(self):
+        return "assets/image/skill15.png"
 
     def skill_attack(self, ai, units):
         target = ai.search_enemy(units)
@@ -274,6 +363,10 @@ class LeechBlade(SkillBehavior):
     @property
     def description(self):
         return "Leech Blade", "Attack speed +50%, heal 50% on attack. Lose 50% HP and stun 10s after."
+
+    @property
+    def icon(self):
+        return "assets/image/skill16.png"
 
     def trigger_skill(self, ai):
         ai.atk_spd /= 1.5
@@ -290,6 +383,51 @@ class LeechBlade(SkillBehavior):
         ai.be_controlled(10)
 
 
+class EarthenGrasp(SkillBehavior):
+    @property
+    def description(self):
+        return "Earthen Grasp", "Reduce movement speed of all enemies by 40% during skill duration."
+
+    @property
+    def icon(self):
+        return "assets/image/skill13.png"
+
+    def trigger_skill(self, ai):
+        self.targets = ai.manager.get_all_enemies()
+        for enemy in self.targets:
+            enemy.move_speed *= 0.6
+
+    def skill_attack(self, ai, units):
+        target = ai.search_enemy(units)
+        if target is not None:
+            ai.normal_attack(target)
+
+    def end_skill(self, ai):
+        for enemy in self.targets:
+            enemy.move_speed /= 0.6  # 恢复原速
+        self.targets = []
+
+
+class StoneEcho(SkillBehavior):
+    @property
+    def description(self):
+        return "Stone Echo", "Each attack stuns enemies in range for 1.2s instead of dealing damage."
+
+    @property
+    def icon(self):
+        return "assets/image/skill14.png"
+
+    def skill_attack(self, ai, units):
+        targets = []
+        for unit in units:
+            if ai.position.distance_to(unit) < ai.range * 64:
+                targets.append(unit)
+        if targets is not None:
+            for target in targets:
+                target.be_controlled(1.2)
+            ai.normal_attack(None)
+
+
 class SkillFactory:
     skill_map = {
         1: BattleCry(),
@@ -297,15 +435,19 @@ class SkillFactory:
         3: TwinStrike(),
         4: RainOfDestruction(),
         5: DualGrace(),
-        6: SanctuarySurge(),
+        6: AzureLight(),
         7: ArcaneExplosion(),
         8: ManaTempest(),
         9: IronRenewal(),
         10: ShieldOfSacrifice(),
         11: KillerInstinct(),
         12: ShadowDance(),
+        13: EarthenGrasp(),
+        14: StoneEcho(),
         15: BloodTap(),
-        16: LeechBlade()
+        16: LeechBlade(),
+        17: GentleBreeze(),
+        18: SacredSanctuary()
     }
 
     @staticmethod

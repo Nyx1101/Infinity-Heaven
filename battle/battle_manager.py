@@ -1,9 +1,8 @@
 from battle.timer import Timer
 from battle.level.level_loader import LevelLoader
-from battle.AI.normal_ai import NormalAI
+from battle.AI.enemy_ai import NormalAI, EliteAI1, EliteAI2, EliteAI3, BossAI
 from entities.enemy import EnemyFactory
 from entities.character import CharacterFactory
-from battle.AI.elite_ai import CharacterAI
 from battle.event_handler import EventHandler
 from entities.modifier import Modifier
 import pygame
@@ -15,7 +14,7 @@ class BattleManager:
     def __init__(self, level, selected_items, formation):
         self.modifier = Modifier(selected_items)
         self.loader = LevelLoader(level)
-        self.map = self.loader.load_level_1_map()
+        self.map = self.loader.load_map()
         self.level_flow = self.loader.load_enemy()
         self.enemy_factory = EnemyFactory(self.modifier)
         self.character_factory = CharacterFactory()
@@ -53,7 +52,8 @@ class BattleManager:
         current_time = self.timer.time()
 
         for i, unit in enumerate(reversed(self.units)):
-            sprite = pygame.image.load(unit["entity"].sprite_image).convert_alpha()
+            sprite_raw = pygame.image.load(unit["entity"].sprite_image).convert_alpha()
+            sprite = pygame.transform.scale(sprite_raw, (64, 64))
             x = screen.get_width() - right_offset - (sprite_size + spacing) * (i + 1)
             y = screen.get_height() - sprite_size - bottom_offset
 
@@ -87,7 +87,16 @@ class BattleManager:
 
         if result:
             new_enemy = self.enemy_factory.create_enemy_by_id(result["id"])
-            ai = NormalAI(new_enemy, self.timer, result["path"])
+            if result["id"] <= 205:
+                ai = NormalAI(new_enemy, self.timer, self, result["path"])
+            elif result["id"] == 206:
+                ai = EliteAI1(new_enemy, self.timer, self, result["path"])
+            elif result["id"] == 207:
+                ai = EliteAI2(new_enemy, self.timer, self, result["path"])
+            elif result["id"] == 208:
+                ai = EliteAI3(new_enemy, self.timer, self, result["path"])
+            else:
+                ai = BossAI(new_enemy, self.timer, self, result["path"])
             self.AIs.append(ai)
 
         for AI in self.get_all_enemies():
@@ -119,5 +128,6 @@ class BattleManager:
         if self.dragging_unit:
             mouse_pos = pygame.mouse.get_pos()
             pos = pygame.Vector2(mouse_pos) - self.drag_offset
-            sprite = pygame.image.load(self.dragging_unit.sprite_image).convert_alpha()
+            sprite_raw = pygame.image.load(self.dragging_unit.sprite_image).convert_alpha()
+            sprite = pygame.transform.scale(sprite_raw, (64, 64))
             screen.blit(sprite, pos)

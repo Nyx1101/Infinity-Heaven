@@ -1,6 +1,7 @@
 class Screen:
-    def __init__(self, manager):
+    def __init__(self, manager, info=None):
         self.manager = manager
+        self.info = info
 
     def swift(self, id=None, data=None):
         self.manager.switch_to(id, data)

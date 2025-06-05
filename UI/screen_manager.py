@@ -1,7 +1,10 @@
 from UI.screens.main_menu import MainMenuScreen
 from UI.screens.stage_select import StageSelectScreen
 from UI.screens.battle import BattleScreen
-# from UI.screens.character_list import
+from UI.screens.character_list import CharacterListScreen
+from UI.screens.character_detail import CharacterDetailScreen
+from UI.screens.story import StoryScreen
+from UI.screens.difficulty_select import DifficultyScreen
 
 
 class ScreenManager:
@@ -10,11 +13,14 @@ class ScreenManager:
         self.history = []
 
         self.id_map = {
-            0: lambda: MainMenuScreen(self),
-            1: lambda: BattleScreen(self),
-            2: lambda: StageSelectScreen(self),
-            # 3: lambda: CharacterScreen(self),
-            # 4: lambda: DifficultySelectScreen(self)
+            0: lambda data=None: MainMenuScreen(self, data),
+            1: lambda data=None: BattleScreen(self, data),
+            2: lambda data=None: StageSelectScreen(self, data),
+            3: lambda data=None: CharacterListScreen(self, data),
+            4: lambda data=None: DifficultyScreen(self, data),
+            5: lambda data=None: CharacterDetailScreen(self, data),
+            # 6: lambda data=None: SettlementScreen(self, data),
+            7: lambda data=None: StoryScreen(self, data)
         }
 
         self.switch_to(0)
@@ -29,12 +35,11 @@ class ScreenManager:
         if id is None:
             if not self.history:
                 return
+            self.history.pop()
             id = self.history.pop()
 
         if id in self.id_map:
-            self.current = self.id_map[id]()
-            if data is not None:
-                self.current.data = data
+            self.current = self.id_map[id](data)
         else:
             print(f"[Error] Invalid screen id: {id}, data: {data}")
 

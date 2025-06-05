@@ -1,12 +1,11 @@
 import pygame
-from battle.AI.elite_ai import CharacterAI
+from battle.AI.character_ai import CharacterAI
 from entities.skill import SkillFactory
-from battle.battle_manager import BattleManager
 TILE_SIZE = 64
 
 
 class EventHandler:
-    def __init__(self, battle_manager: BattleManager):
+    def __init__(self, battle_manager):
         self.battle = battle_manager
 
     def draw_selected_unit_ui(self, screen):
@@ -19,8 +18,11 @@ class EventHandler:
             retreat_text = font.render("Retreat", True, (255, 255, 255))
             screen.blit(retreat_text, (ux + TILE_SIZE, uy + TILE_SIZE))
 
-            skill_text = font.render("Skill", True, (255, 255, 255))
-            screen.blit(skill_text, (ux + TILE_SIZE, uy))
+            icon_path = unit.skill.icon
+            icon_image = pygame.image.load(icon_path).convert_alpha()
+            icon_size = (32, 32)  # you can tweak this size
+            icon_image = pygame.transform.smoothscale(icon_image, icon_size)
+            screen.blit(icon_image, (ux + TILE_SIZE, uy))
 
     def handle_deploy_click(self, screen, mouse_pos):
         for i, unit in enumerate(reversed(self.battle.units)):
@@ -86,8 +88,8 @@ class EventHandler:
 
         if 0 <= tile_y < len(self.battle.map.layout) and 0 <= tile_x < len(self.battle.map.layout[0]):
             tile_value = self.battle.map.layout[tile_y][tile_x]
-            if tile_value in (0, 2) and self.battle.dragging_unit.entity.cost < self.battle.resource:
-                self.battle.resource -= self.battle.dragging_unit.entity.cost
+            if tile_value in (0, 2) and self.battle.dragging_unit.cost < self.battle.resource:
+                self.battle.resource -= self.battle.dragging_unit.cost
                 self.battle.dragging_unit.position = pygame.Vector2(tile_x * TILE_SIZE, tile_y * TILE_SIZE)
                 new_unit = None
                 skill_behavior = None
@@ -100,7 +102,7 @@ class EventHandler:
                         )
                         skill_behavior = SkillFactory.get_behavior(skill_id)
                         break
-                ai = CharacterAI(new_unit, self.battle.timer, tile_x, tile_y, skill_behavior, self.battle)
+                ai = CharacterAI(new_unit, self.battle.timer, self.battle, tile_x, tile_y, skill_behavior)
                 self.battle.AIs.append(ai)
 
                 for unit in self.battle.units:
