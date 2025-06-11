@@ -23,21 +23,35 @@ class CharacterAI(BaseAI):
 
     @property
     def in_cd(self):
+        print(self.timer.time(), self.skill_end_time)
         return self.timer.time() - self.skill_end_time
 
     def trigger_skill(self):
         self.skill_triggered = True
-        self.skill.trigger_skill(self)
         self.skill_start_time = self.timer.time()
+        self.skill.trigger_skill(self)
 
     def skill_attack(self, units):
         self.skill.skill_attack(self, units)
 
     def perform_attack(self, units):
-        if self.timer.time() - self.skill_start_time > self.duration:
-            self.skill_triggered = False
-            self.skill_end_time = self.timer.time()
-            self.skill.end_skill(self)
+        if self.skill is None:
+            if self.timer.time() - self.last_atk > self.atk_spd:
+                if self.skill_triggered:
+                    if self.skill_attack(units):
+                        self.last_atk = self.timer.time()
+                else:
+                    target = self.search_enemy(units)
+                    if target is not None:
+                        self.normal_attack(target)
+            return
+
+        if self.skill_triggered:
+            if self.timer.time() - self.skill_start_time > self.duration:
+                self.skill_triggered = False
+                self.skill_end_time = self.timer.time()
+                self.skill.end_skill(self)
+
         if self.timer.time() - self.last_atk > self.atk_spd:
             if self.skill_triggered:
                 if self.skill_attack(units):
@@ -70,6 +84,9 @@ class CharacterAI(BaseAI):
             green_width = int(bar_width * hp_ratio)
             pygame.draw.rect(screen, (0, 255, 0), (x, y, green_width, bar_height))
 
+            if self.skill is None:
+                return
+
             skill_y = y + bar_height + 2
             pygame.draw.rect(screen, (50, 50, 50), (x, skill_y, bar_width, bar_height))  # 灰底
 
@@ -77,11 +94,14 @@ class CharacterAI(BaseAI):
 
             if self.skill_triggered:
                 elapsed = now - self.skill_start_time
+                print(elapsed)
                 if self.duration > 0:
                     ratio = max(0, 1 - elapsed / self.duration)
                     width = int(bar_width * ratio)
                     pygame.draw.rect(screen, (255, 165, 0),
                                      (x + bar_width - width, skill_y, width, bar_height))
+                    print(
+                        f"skill_triggered: {self.skill_triggered}, now: {now}, start: {self.skill_start_time}, elapsed: {elapsed}, duration: {self.duration}, ratio: {ratio}, width: {width}")
 
             elif now - self.skill_end_time < self.cd:
                 cd_elapsed = now - self.skill_end_time

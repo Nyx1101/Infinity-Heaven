@@ -1,12 +1,11 @@
 from entities.entity import Entity
-from entities.artefact import Artefact
 from utility.data import CHARACTER_DATA, SKILL_MAP
 
 
 class CharacterFactory:
 
     @staticmethod
-    def create_character_by_id(char_id: int, skill_id: int, artefact_id: str) -> Entity:
+    def create_character_by_id(char_id: int, skill_id: int) -> Entity:
         if char_id not in CHARACTER_DATA:
             raise ValueError(f"Unknown character ID: {char_id}")
 
@@ -20,7 +19,5 @@ class CharacterFactory:
         else:
             character["cd"] = 0
             character["duration"] = 0
-
-        Artefact(artefact_id).apply(character)
 
         return Entity(character)

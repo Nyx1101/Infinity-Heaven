@@ -2,7 +2,6 @@ import pygame
 from entities.entity import Entity
 
 TILE_SIZE = 64
-FPS = 60
 
 
 class BaseAI:
@@ -16,7 +15,8 @@ class BaseAI:
         self.atk_spd = self.entity.attack_speed
         self.atk_type = self.entity.atk_type
         self.range = self.entity.range
-        self.sprite = pygame.image.load(entity.sprite_image).convert_alpha()
+        raw_sprite = pygame.image.load(entity.sprite_image).convert_alpha()
+        self.sprite = pygame.transform.smoothscale(raw_sprite, (TILE_SIZE, TILE_SIZE))
         self.timer = timer
         self.controlled = False
         self.controlled_time = None
@@ -33,22 +33,23 @@ class BaseAI:
             return None
         if self.atk_type == 0:
             damage = (self.atk - unit.dfs)
-            damage = max(damage, self.atk * 0.05)
+            damage = max(damage, self.atk * 0.1)
             unit.hp -= damage
             self.last_atk = self.timer.time()
             return damage
         elif self.atk_type == 1:
             damage = (self.atk * (1 - unit.res / 100))
-            damage = max(damage, self.atk * 0.05)
+            damage = max(damage, self.atk * 0.1)
             unit.hp -= damage
             self.last_atk = self.timer.time()
             return damage
         else:
             unit.hp += self.atk
+            unit.hp = min(unit.hp, unit.entity.hp)
             self.last_atk = self.timer.time()
 
     def is_dead(self):
-        if self.hp <= 0:
+        if self.hp <= 0 or self.dead:
             self.dead = True
             for blocker in self.blocker:
                 blocker.blocker.remove(self)
@@ -80,14 +81,11 @@ class BaseAI:
             target = None
             for ally in units:
                 distance = self.position.distance_to(ally.position)
-                if distance < self.range * TILE_SIZE:
+                if distance < self.range * TILE_SIZE and ally.hp < ally.entity.hp:
                     if ally.hp <= minimum:
                         minimum = ally.hp
                         target = ally
-            if target.hp < target.entity.hp:
-                return target
-            else:
-                return None
+            return target
         if self.blocker:
             return self.blocker[0]
         if self.range == 0:

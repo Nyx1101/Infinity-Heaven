@@ -1,6 +1,7 @@
 import pygame
 import sys
 from UI.screens.screen import Screen
+import utility.data
 
 
 class MainMenuScreen(Screen):
@@ -10,7 +11,7 @@ class MainMenuScreen(Screen):
 
         # 加载背景和 logo
         # 原始加载
-        raw_background = pygame.image.load("assets/image/img.png").convert()
+        raw_background = pygame.image.load("assets/image/background1.png").convert()
         # 缩放到屏幕尺寸（704x512）
         self.background = pygame.transform.scale(raw_background, (704, 512))
         raw_logo = pygame.image.load("assets/image/logo.png").convert_alpha()
@@ -27,7 +28,10 @@ class MainMenuScreen(Screen):
     def handle_event(self, screen, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.start_button.collidepoint(event.pos):
-                self.swift(2)  # 暂时跳转到 BattleScreen（你可以改成 StageSelectScreen）
+                if utility.data.STORY_PROGRESS[0] == 0:
+                    self.swift(7, {"stage": 0, "progress": "start"})
+                else:
+                    self.swift(2)
             elif self.quit_button.collidepoint(event.pos):
                 pygame.quit()
                 sys.exit()

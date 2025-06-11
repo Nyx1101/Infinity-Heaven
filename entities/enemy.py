@@ -14,5 +14,3 @@ class EnemyFactory:
             base_data = self.enemy_map[enemy_id].copy()
             modified_data = self.modifier.apply(base_data)
             return Entity(modified_data)
-        else:
-            raise ValueError(f"Unknown enemy ID: {enemy_id}")

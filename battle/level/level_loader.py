@@ -2,13 +2,7 @@ from pathlib import Path
 from battle.level.grid import Grid
 from battle.level.map import Map
 from battle.level.level_flow import LevelFlow
-from utility.data import LEVEL_MAPS
-
-level1_schedule = [
-    {"id": 200, "time": 1.0, "path": [(0, 0), (0, 3), (10, 3)]},
-    {"id": 201, "time": 3.0, "path": [(0, 0), (0, 3), (10, 3)]},
-    {"id": 201, "time": 5.0, "path": [(0, 0), (0, 3), (10, 3)]},
-]
+from utility.data import LEVEL_MAPS, LEVEL_SCHEDULES
 
 
 class LevelLoader:
@@ -39,5 +33,5 @@ class LevelLoader:
         )
 
     def load_enemy(self):
-        if self.level == 7:
-            return LevelFlow(level1_schedule)
+        print(self.level)
+        return LevelFlow(LEVEL_SCHEDULES[self.level])

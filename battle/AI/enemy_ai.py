@@ -14,8 +14,9 @@ class NormalAI(BaseAI):
             self.path[0][0] * TILE_SIZE,
             self.path[0][1] * TILE_SIZE
         )
-        self.speed_grid_per_sec = entity.speed
-        self.speed_pixel_per_frame = self.speed_grid_per_sec * TILE_SIZE / FPS
+        self.last_update = self.timer.time()
+        self.speed_pixel_per_sec = entity.speed * TILE_SIZE
+        self.speed_pixel_per_frame = TILE_SIZE / FPS
 
     def check_blocked(self, units):
         for unit in units:
@@ -51,10 +52,10 @@ class NormalAI(BaseAI):
 
         move = pygame.Vector2(0, 0)
         if abs(delta.x) > abs(delta.y):
-            move.x = self.speed_pixel_per_frame if delta.x > 0 else -self.speed_pixel_per_frame
+            move.x = self.speed_pixel_per_sec * (self.timer.time() - self.last_update) if delta.x > 0 else -self.speed_pixel_per_sec * (self.timer.time() - self.last_update)
         else:
-            move.y = self.speed_pixel_per_frame if delta.y > 0 else -self.speed_pixel_per_frame
-
+            move.y = self.speed_pixel_per_sec * (self.timer.time() - self.last_update) if delta.y > 0 else -self.speed_pixel_per_sec * (self.timer.time() - self.last_update)
+        self.last_update = self.timer.time()
         if move.length() > distance:
             move = delta
 

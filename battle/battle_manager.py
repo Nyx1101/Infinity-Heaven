@@ -5,13 +5,15 @@ from entities.enemy import EnemyFactory
 from entities.character import CharacterFactory
 from battle.event_handler import EventHandler
 from entities.modifier import Modifier
+import utility.data
 import pygame
 
 TILE_SIZE = 64
 
 
 class BattleManager:
-    def __init__(self, level, selected_items, formation):
+    def __init__(self, level, selected_items, formation, on_finish_callback=None):
+        self.on_finish = on_finish_callback
         self.modifier = Modifier(selected_items)
         self.loader = LevelLoader(level)
         self.map = self.loader.load_map()
@@ -26,7 +28,7 @@ class BattleManager:
         self.formation = formation
         for data in self.formation:
             char_id = data["id"]
-            character_entity = CharacterFactory.create_character_by_id(char_id, data["skill_id"], data["artefact_id"])
+            character_entity = CharacterFactory.create_character_by_id(char_id, data["skill_id"])
             unit_info = {
                 "entity": character_entity,
                 "death_time": None
@@ -36,6 +38,13 @@ class BattleManager:
         self.dragging_unit = None
         self.drag_offset = pygame.Vector2(0, 0)
         self.selected_unit_ai = None
+        self.paused = False
+        self.pause_button_rect = pygame.Rect(0, 8 * TILE_SIZE - 64, 64, 64)
+        self.cost_icon_rect = pygame.Rect(64, 8 * TILE_SIZE - 64, 64, 64)
+        self.pause_icon = pygame.transform.scale(pygame.image.load("assets/image/pause.png"), (64, 64))
+        self.start_icon = pygame.transform.scale(pygame.image.load("assets/image/start.png"), (64, 64))
+        self.cost_icon = pygame.transform.scale(pygame.image.load("assets/image/cost.png"), (64, 64))
+        self.last_update_time = self.timer.time()
 
     def get_all_characters(self):
         return [ai for ai in self.AIs if ai.entity.type == 1 or ai.entity.type == 2]
@@ -49,10 +58,11 @@ class BattleManager:
         bottom_offset = 0
         right_offset = 0
 
-        current_time = self.timer.time()
+        font = pygame.font.SysFont(None, 20)  # 添加字体对象
 
         for i, unit in enumerate(reversed(self.units)):
-            sprite_raw = pygame.image.load(unit["entity"].sprite_image).convert_alpha()
+            entity = unit["entity"]
+            sprite_raw = pygame.image.load(entity.sprite_image).convert_alpha()
             sprite = pygame.transform.scale(sprite_raw, (64, 64))
             x = screen.get_width() - right_offset - (sprite_size + spacing) * (i + 1)
             y = screen.get_height() - sprite_size - bottom_offset
@@ -60,14 +70,14 @@ class BattleManager:
             screen.blit(sprite, (x, y))
 
             death_time = unit["death_time"]
-            redeploy_time = unit["entity"].redeployment_time
+            redeploy_time = entity.redeployment_time
 
             if death_time is not None:
-                elapsed = current_time - death_time
+                elapsed = self.timer.time() - death_time
                 progress = min(elapsed / redeploy_time, 1.0)
 
                 overlay = pygame.Surface((sprite_size, sprite_size), pygame.SRCALPHA)
-                grayness = int((1.0 - progress) * 180)
+                grayness = max(0, min(255, int((1.0 - progress) * 180)))
                 overlay.fill((50, 50, 50, grayness))
                 screen.blit(overlay, (x, y))
 
@@ -77,11 +87,20 @@ class BattleManager:
                     cooldown_bar.fill((0, 0, 0, 120))
                     screen.blit(cooldown_bar, (x, y))
 
+            cost = entity.cost
+            color = (0, 255, 0) if cost <= self.resource else (255, 0, 0)
+            cost_text = font.render(f"{cost}", True, color)
+            cost_text_rect = cost_text.get_rect(center=(x + sprite_size // 2, y + sprite_size - 10))
+            screen.blit(cost_text, cost_text_rect)
+
     def handle_event(self, screen, event):
         self.event_handler.handle_event(screen, event)
 
     def update(self):
-        self.resource = min(self.resource + 1 / 60, 99)
+        if self.paused:
+            return
+        self.resource = min(self.resource + (self.timer.time() - self.last_update_time), 99)
+        self.last_update_time = self.timer.time()
         current_time = self.timer.time()-self.start_time
         result = self.level_flow.pop_next_if_due(current_time)
 
@@ -104,7 +123,8 @@ class BattleManager:
             if AI.dead:
                 self.AIs.remove(AI)
             if AI.score:
-                self.AIs.remove(AI)
+                if self.on_finish:
+                    self.on_finish(result="lose")
 
         for AI in self.get_all_characters():
             if AI.entity.type == 2:
@@ -119,7 +139,25 @@ class BattleManager:
                 self.units.append(unit_info)
                 self.AIs.remove(AI)
 
+        if not self.level_flow.has_remaining() and not self.get_all_enemies():
+            if self.modifier.atk_multiplier == 1:
+                if utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] < 1:
+                    utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] = 1
+            elif self.modifier.atk_multiplier == 1.1:
+                if utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] < 2:
+                    utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] = 2
+                    utility.data.ELITE_BADGE[0] += 1
+            else:
+                if utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] <= 1:
+                    utility.data.ELITE_BADGE[0] += 1
+                    utility.data.ELITE_BADGE[1] += 1
+                elif utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] == 2:
+                    utility.data.ELITE_BADGE[1] += 1
+                utility.data.LEVEL_PROGRESS[utility.data.CURRENT_STAGE - 1] = 3
+            self.on_finish(result="win")
+
     def draw(self, screen):
+
         self.map.draw(screen)
         self.draw_characters_in_corner(screen)
         self.event_handler.draw_selected_unit_ui(screen)
@@ -131,3 +169,17 @@ class BattleManager:
             sprite_raw = pygame.image.load(self.dragging_unit.sprite_image).convert_alpha()
             sprite = pygame.transform.scale(sprite_raw, (64, 64))
             screen.blit(sprite, pos)
+
+        screen.blit(self.start_icon if self.paused else self.pause_icon, self.pause_button_rect.topleft)
+        screen.blit(self.cost_icon, self.cost_icon_rect.topleft)
+
+        font = pygame.font.SysFont(None, 24)
+        resource_text = font.render(str(int(self.resource)), True, (255, 255, 255))
+        text_rect = resource_text.get_rect(center=(self.cost_icon_rect.centerx, self.cost_icon_rect.bottom - 10))
+        screen.blit(resource_text, text_rect)
+        self.event_handler.draw_dragged_unit_range(screen)
+
+        if self.paused:
+            overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 128))
+            screen.blit(overlay, (0, 0))

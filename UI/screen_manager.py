@@ -5,13 +5,14 @@ from UI.screens.character_list import CharacterListScreen
 from UI.screens.character_detail import CharacterDetailScreen
 from UI.screens.story import StoryScreen
 from UI.screens.difficulty_select import DifficultyScreen
+from UI.screens.settlement import SettlementScreen
 
 
 class ScreenManager:
-    def __init__(self):
+    def __init__(self, audio):
         self.current = None
         self.history = []
-
+        self.audio = audio
         self.id_map = {
             0: lambda data=None: MainMenuScreen(self, data),
             1: lambda data=None: BattleScreen(self, data),
@@ -19,7 +20,7 @@ class ScreenManager:
             3: lambda data=None: CharacterListScreen(self, data),
             4: lambda data=None: DifficultyScreen(self, data),
             5: lambda data=None: CharacterDetailScreen(self, data),
-            # 6: lambda data=None: SettlementScreen(self, data),
+            6: lambda data=None: SettlementScreen(self, data),
             7: lambda data=None: StoryScreen(self, data)
         }
 
@@ -37,6 +38,11 @@ class ScreenManager:
                 return
             self.history.pop()
             id = self.history.pop()
+
+        if id == 1:
+            self.audio.play_music("battle_bgm.mp3")
+        elif self.current is None or self.current.screen_id == 1:
+            self.audio.play_music("menu_bgm.mp3")
 
         if id in self.id_map:
             self.current = self.id_map[id](data)

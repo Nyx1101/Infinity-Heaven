@@ -79,8 +79,9 @@ class TwinStrike(SkillBehavior):
         return "assets/image/skill3.png"
 
     def trigger_skill(self, ai: CharacterAI):
+        print("yes")
         ai.atk += ai.entity.atk * 0.2
-        if ai.count is not None:
+        if hasattr(ai, "count"):
             ai.duration = 3600
             return
         ai.count = 1
@@ -89,7 +90,8 @@ class TwinStrike(SkillBehavior):
         target = ai.search_enemy(units)
         if target is not None:
             ai.normal_attack(target)
-            ai.normal_attack(ai.search_enemy(units))
+            if not target.dead:
+                ai.normal_attack(target)
 
     def end_skill(self, ai: CharacterAI):
         ai.atk -= ai.entity.atk * 0.2
