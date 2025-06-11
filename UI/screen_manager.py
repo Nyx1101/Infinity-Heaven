@@ -23,6 +23,7 @@ class ScreenManager:
             6: lambda data=None: SettlementScreen(self, data),
             7: lambda data=None: StoryScreen(self, data)
         }
+        self.quit = False
 
         self.switch_to(0)
 

@@ -1,16 +1,13 @@
 from pathlib import Path
 import pygame
-from typing import Dict
 
 
 class AudioManager:
     def __init__(self, audio_root: Path):
         pygame.mixer.init()
-        self.sounds: Dict[str, pygame.mixer.Sound] = {}
         self.current_music = None
         self.music_paused = False
 
-        self.sounds_path = audio_root / "sounds"
         self.music_path = audio_root / "music"
 
     def play_music(self, filename: str, loops=-1):

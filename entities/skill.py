@@ -256,9 +256,10 @@ class AzureLight(SkillBehavior):
             ai.normal_attack(first_target)
             units.remove(first_target)
             second_target = ai.search_enemy(units)
-            ai.normal_attack(second_target)
-            units.remove(second_target)
-            ai.normal_attack(ai.search_enemy(units))
+            if second_target is not None:
+                ai.normal_attack(second_target)
+                units.remove(second_target)
+                ai.normal_attack(ai.search_enemy(units))
 
     def end_skill(self, ai):
         ai.atk -= ai.entity.atk

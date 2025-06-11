@@ -129,9 +129,7 @@ class CharacterDetailScreen(Screen):
                     # 消耗道具
                     data.ELITE_BADGE[badge_type] -= 1
                     data.ELITE_PROGRESS[self.char_id] += 1
-                    self.set_data(self.char_id)
-                    data.SKILL_SELECTED[self.char_id] = self.elite_level + 1
-
+                    data.SKILL_SELECTED[self.char_id] = data.ELITE_PROGRESS[self.char_id]
                     self.set_data(self.char_id)
 
     def draw(self, screen):

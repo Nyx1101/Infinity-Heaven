@@ -1,5 +1,4 @@
 import pygame
-import sys
 from UI.screens.screen import Screen
 import utility.data
 
@@ -33,8 +32,7 @@ class MainMenuScreen(Screen):
                 else:
                     self.swift(2)
             elif self.quit_button.collidepoint(event.pos):
-                pygame.quit()
-                sys.exit()
+                self.manager.quit = True
 
     def draw(self, screen):
         screen.blit(self.background, (0, 0))

@@ -107,6 +107,12 @@ class EventHandler:
 
         if 0 <= tile_y < len(self.battle.map.layout) and 0 <= tile_x < len(self.battle.map.layout[0]):
             tile_value = self.battle.map.layout[tile_y][tile_x]
+
+            for ai in self.battle.AIs:
+                if ai.tile_x == tile_x and ai.tile_y == tile_y:
+                    self.battle.dragging_unit = None
+                    return
+
             if tile_value in (0, 2) and self.battle.dragging_unit.cost < self.battle.resource:
                 self.battle.resource -= self.battle.dragging_unit.cost
                 self.battle.dragging_unit.position = pygame.Vector2(tile_x * TILE_SIZE, tile_y * TILE_SIZE)

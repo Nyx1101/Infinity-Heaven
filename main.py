@@ -41,6 +41,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         screen_manager.handle_event(screen, event)
+        if screen_manager.quit:
+            running = False
 
     screen_manager.update()
     screen_manager.draw(screen)

@@ -52,7 +52,8 @@ class BaseAI:
         if self.hp <= 0 or self.dead:
             self.dead = True
             for blocker in self.blocker:
-                blocker.blocker.remove(self)
+                if self in blocker.blocker:
+                    blocker.blocker.remove(self)
             return True
 
     def be_controlled(self, time):
