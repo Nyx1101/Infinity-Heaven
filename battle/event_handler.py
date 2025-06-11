@@ -108,7 +108,7 @@ class EventHandler:
         if 0 <= tile_y < len(self.battle.map.layout) and 0 <= tile_x < len(self.battle.map.layout[0]):
             tile_value = self.battle.map.layout[tile_y][tile_x]
 
-            for ai in self.battle.AIs:
+            for ai in self.battle.get_all_characters():
                 if ai.tile_x == tile_x and ai.tile_y == tile_y:
                     self.battle.dragging_unit = None
                     return
