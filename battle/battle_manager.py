@@ -106,16 +106,16 @@ class BattleManager:
 
         if result:
             new_enemy = self.enemy_factory.create_enemy_by_id(result["id"])
-            if result["id"] <= 205:
-                ai = NormalAI(new_enemy, self.timer, self, result["path"])
-            elif result["id"] == 206:
+            if result["id"] == 205:
                 ai = EliteAI1(new_enemy, self.timer, self, result["path"])
-            elif result["id"] == 207:
-                ai = EliteAI2(new_enemy, self.timer, self, result["path"])
             elif result["id"] == 208:
+                ai = EliteAI2(new_enemy, self.timer, self, result["path"])
+            elif result["id"] == 207:
                 ai = EliteAI3(new_enemy, self.timer, self, result["path"])
-            else:
+            elif result["id"] == 209:
                 ai = BossAI(new_enemy, self.timer, self, result["path"])
+            else:
+                ai = NormalAI(new_enemy, self.timer, self, result["path"])
             self.AIs.append(ai)
 
         for AI in self.get_all_enemies():

@@ -7,12 +7,18 @@ from utility.data import LEVEL_MAPS, LEVEL_SCHEDULES
 
 class LevelLoader:
     def __init__(self, level):
-        self.asset_dir = Path("assets/image")
-        self.tile_size = 64
-        self.level = level
+        """
+        Initialize the LevelLoader with a specific level number.
+        """
+        self.asset_dir = Path("assets/image")  # Directory where tile images are stored
+        self.tile_size = 64                    # Tile size in pixels
+        self.level = level                     # Current level number
 
     @staticmethod
     def load_tile_defs():
+        """
+        Load and return tile definitions mapping tile IDs to Grid objects.
+        """
         return {
             0: Grid(0, "grid0.png"),
             1: Grid(1, "grid1.png"),
@@ -23,8 +29,11 @@ class LevelLoader:
         }
 
     def load_map(self):
+        """
+        Load the map for the current level using tile definitions and layout.
+        """
         tile_defs = self.load_tile_defs()
-        layout = LEVEL_MAPS[self.level]
+        layout = LEVEL_MAPS[self.level]  # Get tile layout for current level from global data
         return Map(
             tile_definitions=tile_defs,
             layout=layout,
@@ -33,5 +42,8 @@ class LevelLoader:
         )
 
     def load_enemy(self):
-        print(self.level)
+        """
+        Load the enemy spawn schedule for the current level.
+        """
+        print(self.level)  # Debug: print the level number being loaded
         return LevelFlow(LEVEL_SCHEDULES[self.level])

@@ -23,12 +23,13 @@ class EventHandler:
             retreat_text = font.render("Retreat", True, (255, 255, 255))
             screen.blit(retreat_text, (ux + TILE_SIZE, uy + TILE_SIZE))
 
-            if unit.skill:
-                icon_path = unit.skill.icon
-                icon_image = pygame.image.load(icon_path).convert_alpha()
-                icon_size = (32, 32)
-                icon_image = pygame.transform.smoothscale(icon_image, icon_size)
-                screen.blit(icon_image, (ux + TILE_SIZE, uy))
+            if hasattr(unit, "skill"):
+                if unit.skill is not None:
+                    icon_path = unit.skill.icon
+                    icon_image = pygame.image.load(icon_path).convert_alpha()
+                    icon_size = (32, 32)
+                    icon_image = pygame.transform.smoothscale(icon_image, icon_size)
+                    screen.blit(icon_image, (ux + TILE_SIZE, uy))
 
     def draw_dragged_unit_range(self, screen):
         if self.battle.dragging_unit and self.battle.dragging_unit.range > 0:

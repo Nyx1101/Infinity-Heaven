@@ -6,6 +6,7 @@ TILE_SIZE = 64
 
 class BaseAI:
     def __init__(self, entity: Entity, timer, manager):
+        # Initialize AI with entity stats and visuals
         self.entity = entity
         self.manager = manager
         self.hp = self.entity.hp
@@ -28,27 +29,29 @@ class BaseAI:
         self.position = None
 
     def normal_attack(self, unit):
+        # Perform attack based on attack type (physical, magical, healing)
         if not unit:
             self.last_atk = self.timer.time()
             return None
-        if self.atk_type == 0:
+        if self.atk_type == 0:  # Physical attack
             damage = (self.atk - unit.dfs)
-            damage = max(damage, self.atk * 0.1)
+            damage = max(damage, self.atk * 0.1)  # Minimum damage floor
             unit.hp -= damage
             self.last_atk = self.timer.time()
             return damage
-        elif self.atk_type == 1:
+        elif self.atk_type == 1:  # Magical attack
             damage = (self.atk * (1 - unit.res / 100))
             damage = max(damage, self.atk * 0.1)
             unit.hp -= damage
             self.last_atk = self.timer.time()
             return damage
-        else:
+        else:  # Healing attack
             unit.hp += self.atk
             unit.hp = min(unit.hp, unit.entity.hp)
             self.last_atk = self.timer.time()
 
     def is_dead(self):
+        # Check if unit is dead and clean up blocking references
         if self.hp <= 0 or self.dead:
             self.dead = True
             for blocker in self.blocker:
@@ -57,11 +60,13 @@ class BaseAI:
             return True
 
     def be_controlled(self, time):
+        # Mark unit as controlled (stunned, charmed, etc.) for a duration
         self.controlled = True
         self.control_duration = time
         self.controlled_time = self.timer.time()
 
     def is_controlled(self):
+        # Check if control effect is still active
         if self.controlled:
             if self.controlled_time + self.control_duration < self.timer.time():
                 self.controlled = False
@@ -71,13 +76,16 @@ class BaseAI:
             return True
 
     def is_blocked(self):
+        # Update blocking state based on blockers list
         if self.blocker:
             self.blocked = True
         else:
             self.blocked = False
 
     def search_enemy(self, units):
+        # Find an enemy target to attack or ally to heal depending on attack type
         if self.atk_type == 2:
+            # Healing: find ally with the lowest HP within range
             minimum = 10000
             target = None
             for ally in units:
@@ -88,9 +96,11 @@ class BaseAI:
                         target = ally
             return target
         if self.blocker:
+            # If blocked, attack blocker first
             return self.blocker[0]
         if self.range == 0:
             return None
+        # Otherwise, find nearest enemy within range
         target = None
         nearest = 10000
         for unit in units:
@@ -102,12 +112,14 @@ class BaseAI:
             return target
 
     def perform_attack(self, units):
+        # Attack target if cooldown expired
         if self.timer.time() - self.last_atk > self.atk_spd:
             target = self.search_enemy(units)
             if target is not None:
                 self.normal_attack(target)
 
     def update(self, units):
+        # Main AI update loop: check block, death, control, and attack
         self.is_blocked()
         if self.is_dead():
             return
@@ -116,6 +128,7 @@ class BaseAI:
         self.perform_attack(units)
 
     def draw(self, screen):
+        # Draw sprite and health bar if alive
         if not self.dead:
             screen.blit(self.sprite, self.position)
 

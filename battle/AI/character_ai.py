@@ -23,8 +23,10 @@ class CharacterAI(BaseAI):
 
     @property
     def in_cd(self):
-        print(self.timer.time(), self.skill_end_time)
-        return self.timer.time() - self.skill_end_time
+        if self.skill_triggered:
+            return 0
+        else:
+            return self.timer.time() - self.skill_end_time
 
     def trigger_skill(self):
         self.skill_triggered = True

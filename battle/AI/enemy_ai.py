@@ -16,7 +16,6 @@ class NormalAI(BaseAI):
         )
         self.last_update = self.timer.time()
         self.speed_pixel_per_sec = entity.speed * TILE_SIZE
-        self.speed_pixel_per_frame = TILE_SIZE / FPS
 
     def check_blocked(self, units):
         for unit in units:
@@ -55,7 +54,6 @@ class NormalAI(BaseAI):
             move.x = self.speed_pixel_per_sec * (self.timer.time() - self.last_update) if delta.x > 0 else -self.speed_pixel_per_sec * (self.timer.time() - self.last_update)
         else:
             move.y = self.speed_pixel_per_sec * (self.timer.time() - self.last_update) if delta.y > 0 else -self.speed_pixel_per_sec * (self.timer.time() - self.last_update)
-        self.last_update = self.timer.time()
         if move.length() > distance:
             move = delta
 
@@ -69,6 +67,7 @@ class NormalAI(BaseAI):
         super().update(units)
         if not self.blocked:
             self.move()
+        self.last_update = self.timer.time()
 
 
 class EliteAI1(NormalAI):
@@ -76,6 +75,7 @@ class EliteAI1(NormalAI):
         super().__init__(entity, timer, manager, path)
 
     def update(self, units):
+        super().update(units)
         if self.blocked:
             self.hp -= self.entity.hp * 0.02 / FPS
 
@@ -89,7 +89,7 @@ class EliteAI2(NormalAI):
             target = self.search_enemy(units)
             if target is not None:
                 for unit in units:
-                    if unit.position.distance_to(target) < 1.5 * TILE_SIZE:
+                    if unit.position.distance_to(target.position) < 1.5 * TILE_SIZE:
                         self.normal_attack(unit)
 
 
@@ -145,10 +145,11 @@ class BossAI(NormalAI):
             self.ultimate_trigger_time = self.timer.time()
             self.atk_spd = 1
             self.atk = 1000
-        if self.timer.time() - self.ultimate_trigger_time > 10:
-            self.ultimate_triggered = False
-            self.atk_spd = self.entity.attack_speed
-            self.atk = self.entity.atk
+        if self.ultimate_triggered:
+            if self.timer.time() - self.ultimate_trigger_time > 10:
+                self.ultimate_triggered = False
+                self.atk_spd = self.entity.attack_speed
+                self.atk = self.entity.atk
         self.perform_attack(units)
         if not self.blocked and not self.ultimate_triggered:
             self.move()

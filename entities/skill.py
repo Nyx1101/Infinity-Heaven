@@ -61,6 +61,7 @@ class LastStand(SkillBehavior):
         ai.entity.hp /= 10000
         ai.atk = ai.entity.atk
         ai.dead = True
+        ai.is_dead()
 
     def skill_attack(self, ai, units):
         ai.atk = ai.entity.atk * (3 - 2 * ((ai.timer.time() - ai.skill_start_time) / ai.duration))
@@ -129,7 +130,7 @@ class ArcaneExplosion(SkillBehavior):
         if target is not None:
             targets = [target]
             for unit in units:
-                if target.position.distance_to(unit) < 64:
+                if target.position.distance_to(unit.position) < 64:
                     targets.append(unit)
             for enemy in targets:
                 enemy.controlled = True
@@ -288,6 +289,7 @@ class KillerInstinct(SkillBehavior):
     def end_skill(self, ai):
         ai.atk -= ai.entity.atk * 0.5
         ai.dead = True
+        ai.is_dead()
 
 
 class ShadowDance(SkillBehavior):
@@ -303,10 +305,11 @@ class ShadowDance(SkillBehavior):
         ai.atk += ai.entity.atk * 2
         units = ai.manager.get_all_enemies()
         for unit in units:
-            if ai.position.distance_to(unit) < 96:
+            if ai.position.distance_to(unit.position) < 96:
                 ai.normal_attack(unit)
         ai.atk -= ai.entity.atk * 2
         ai.dead = True
+        ai.is_dead()
 
 
 class GentleBreeze(SkillBehavior):
@@ -344,6 +347,7 @@ class SacredSanctuary(SkillBehavior):
             ally.hp /= 10000
             ally.range -= 1
         ai.dead = True
+        ai.is_dead()
 
 
 class BloodTap(SkillBehavior):
@@ -398,7 +402,7 @@ class EarthenGrasp(SkillBehavior):
     def trigger_skill(self, ai):
         self.targets = ai.manager.get_all_enemies()
         for enemy in self.targets:
-            enemy.move_speed *= 0.6
+            enemy.speed_pixel_per_sec *= 0.6
 
     def skill_attack(self, ai, units):
         target = ai.search_enemy(units)
@@ -407,7 +411,7 @@ class EarthenGrasp(SkillBehavior):
 
     def end_skill(self, ai):
         for enemy in self.targets:
-            enemy.move_speed /= 0.6  # 恢复原速
+            enemy.speed_pixel_per_sec /= 0.6  # 恢复原速
         self.targets = []
 
 
@@ -423,7 +427,7 @@ class StoneEcho(SkillBehavior):
     def skill_attack(self, ai, units):
         targets = []
         for unit in units:
-            if ai.position.distance_to(unit) < ai.range * 64:
+            if ai.position.distance_to(unit.position) < ai.range * 64:
                 targets.append(unit)
         if targets is not None:
             for target in targets:
