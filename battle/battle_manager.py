@@ -18,7 +18,7 @@ class BattleManager:
 
         Args:
             level (int): The current level identifier.
-            selected_items (list): List of selected item IDs to apply as modifiers.
+            selected_items (dict): Dictionary with keys 'hp', 'attack', 'defense' and integer values.
             formation (list): List of character placements including IDs and skill assignments.
             on_finish_callback (function, optional): Callback function to be called on win/lose.
         """
