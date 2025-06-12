@@ -1,22 +1,28 @@
 from battle.AI.character_ai import CharacterAI
 
 
+# Base class for all skills
 class SkillBehavior:
     @property
     def description(self):
+        # Tuple containing skill name and description
         return None
 
     @property
     def icon(self):
+        # File path to skill icon
         return None
 
     def trigger_skill(self, ai: CharacterAI):
+        # Called when skill is activated
         pass
 
     def skill_attack(self, ai: CharacterAI, units):
+        # Called repeatedly during skill active phase
         pass
 
     def end_skill(self, ai: CharacterAI):
+        # Called when skill ends
         pass
 
 
@@ -435,6 +441,8 @@ class StoneEcho(SkillBehavior):
 
 
 class SkillFactory:
+    # A dictionary that maps skill IDs to their corresponding SkillBehavior instances.
+    # This allows for easy lookup and instantiation of skill behaviors by ID.
     skill_map = {
         1: BattleCry(),
         2: LastStand(),
@@ -458,4 +466,7 @@ class SkillFactory:
 
     @staticmethod
     def get_behavior(skill_id):
+        """
+        Returns the SkillBehavior instance corresponding to the given skill_id.
+        """
         return SkillFactory.skill_map.get(skill_id)

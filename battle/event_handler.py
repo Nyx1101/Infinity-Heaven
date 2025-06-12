@@ -1,43 +1,47 @@
 import pygame
 from battle.AI.character_ai import CharacterAI
 from entities.skill import SkillFactory
-import utility.data
+
 TILE_SIZE = 64
 
 
 class EventHandler:
     def __init__(self, battle_manager):
-        self.battle = battle_manager
+        self.battle = battle_manager  # Reference to the main battle manager
 
     def draw_selected_unit_ui(self, screen):
+        # Draw UI elements for the currently selected unit (retreat button, skill icon)
         if self.battle.selected_unit_ai and not self.battle.selected_unit_ai.dead:
             unit = self.battle.selected_unit_ai
             ux, uy = int(unit.position.x), int(unit.position.y)
             screen_width, screen_height = pygame.display.get_surface().get_size()
             button_width, button_height = 50, 20
 
+            # Default button positions
             btn_x = ux + TILE_SIZE
             btn_y_retreat = uy + TILE_SIZE
             btn_y_skill = uy
 
+            # Adjust position if out of screen bounds
             if btn_x + button_width > screen_width:
                 btn_x = ux - button_width
-
             if btn_y_retreat + button_height > screen_height:
                 btn_y_retreat = uy - button_height
-
             if btn_y_skill < 0:
                 btn_y_skill = uy + TILE_SIZE
 
+            # Draw unit attack range as red circle
             if unit.range > 0:
                 center = (ux + TILE_SIZE // 2, uy + TILE_SIZE // 2)
                 radius = unit.range * TILE_SIZE
                 pygame.draw.circle(screen, (255, 0, 0), center, radius, 1)
 
+            # Draw retreat button
             font = pygame.font.SysFont(None, 20)
             retreat_text = font.render("Retreat", True, (255, 255, 255))
             screen.blit(retreat_text, (btn_x, btn_y_retreat))
 
+            # Draw skill icon if available
             if hasattr(unit, "skill") and unit.skill is not None:
                 icon_path = unit.skill.icon
                 icon_image = pygame.image.load(icon_path).convert_alpha()
@@ -45,6 +49,7 @@ class EventHandler:
                 screen.blit(icon_image, (btn_x, btn_y_skill))
 
     def draw_dragged_unit_range(self, screen):
+        # Draw range circle for unit currently being dragged
         if self.battle.dragging_unit and self.battle.dragging_unit.range > 0:
             mouse_pos = pygame.mouse.get_pos()
             drag_offset = self.battle.drag_offset
@@ -53,9 +58,10 @@ class EventHandler:
 
             center = (int(x + TILE_SIZE // 2), int(y + TILE_SIZE // 2))
             radius = self.battle.dragging_unit.range * TILE_SIZE
-            pygame.draw.circle(screen, (0, 255, 0), center, radius, 1)  # 绿色圆圈
+            pygame.draw.circle(screen, (0, 255, 0), center, radius, 1)  # Green circle
 
     def handle_deploy_click(self, screen, mouse_pos):
+        # Check if player clicked on unit deploy area
         for i, unit in enumerate(reversed(self.battle.units)):
             death_time = unit["death_time"]
             redeploy_time = unit["entity"].redeployment_time
@@ -66,12 +72,14 @@ class EventHandler:
                 if elapsed < redeploy_time:
                     continue
 
+            # Get sprite and position
             sprite = pygame.image.load(unit["entity"].sprite_image).convert_alpha()
             sprite_rect = sprite.get_rect()
             x = screen.get_width() - (64 + 0) * (i + 1)
             y = screen.get_height() - 64
             sprite_rect.topleft = (x, y)
 
+            # Check click collision
             if sprite_rect.collidepoint(mouse_pos):
                 self.battle.dragging_unit = unit["entity"]
                 self.battle.drag_offset = pygame.Vector2(mouse_pos) - pygame.Vector2(x, y)
@@ -79,6 +87,7 @@ class EventHandler:
         return False
 
     def handle_character_selection(self, mouse_pos):
+        # Select unit on map based on tile clicked
         tile_x = mouse_pos[0] // TILE_SIZE
         tile_y = mouse_pos[1] // TILE_SIZE
         self.battle.selected_unit_ai = None
@@ -91,6 +100,7 @@ class EventHandler:
                 break
 
     def handle_unit_buttons(self, mouse_pos):
+        # Handle skill and retreat button interactions
         if not self.battle.selected_unit_ai or self.battle.selected_unit_ai.dead:
             return
 
@@ -105,10 +115,8 @@ class EventHandler:
 
         if btn_x + button_width > screen_width:
             btn_x = ux - button_width
-
         if btn_y_retreat + button_height > screen_height:
             btn_y_retreat = uy - button_height
-
         if btn_y_skill < 0:
             btn_y_skill = uy + TILE_SIZE
 
@@ -116,6 +124,7 @@ class EventHandler:
         skill_rect = pygame.Rect(btn_x, btn_y_skill, button_width, button_height)
 
         if retreat_rect.collidepoint(mouse_pos):
+            # Trigger retreat
             unit.dead = True
             unit.is_dead()
             unit.death_time = self.battle.timer.time()
@@ -123,11 +132,13 @@ class EventHandler:
             return
 
         elif skill_rect.collidepoint(mouse_pos):
+            # Trigger skill if off cooldown
             if unit.skill is not None and unit.in_cd > unit.cd:
                 unit.trigger_skill()
                 return
 
     def handle_unit_placement(self, mouse_pos):
+        # Place a unit on the battlefield
         if not self.battle.dragging_unit:
             return
 
@@ -137,16 +148,20 @@ class EventHandler:
         if 0 <= tile_y < len(self.battle.map.layout) and 0 <= tile_x < len(self.battle.map.layout[0]):
             tile_value = self.battle.map.layout[tile_y][tile_x]
 
+            # Prevent placement on already occupied tiles
             for ai in self.battle.get_all_characters():
                 if ai.tile_x == tile_x and ai.tile_y == tile_y:
                     self.battle.dragging_unit = None
                     return
 
+            # Valid placement
             if tile_value in (0, 2) and self.battle.dragging_unit.cost < self.battle.resource:
                 self.battle.resource -= self.battle.dragging_unit.cost
                 self.battle.dragging_unit.position = pygame.Vector2(tile_x * TILE_SIZE, tile_y * TILE_SIZE)
                 new_unit = None
                 skill_behavior = None
+
+                # Match with formation data
                 for formation_data in self.battle.formation:
                     if formation_data["id"] == self.battle.dragging_unit.id:
                         skill_id = formation_data["skill_id"] + formation_data["id"] * 2 - 200
@@ -157,9 +172,11 @@ class EventHandler:
                         if formation_data["skill_id"] == 0:
                             skill_behavior = None
                         break
+
                 ai = CharacterAI(new_unit, self.battle.timer, self.battle, tile_x, tile_y, skill_behavior)
                 self.battle.AIs.append(ai)
 
+                # Remove unit from deploy list
                 for unit in self.battle.units:
                     if unit["entity"] == self.battle.dragging_unit:
                         self.battle.units.remove(unit)
@@ -168,8 +185,10 @@ class EventHandler:
         self.battle.dragging_unit = None
 
     def handle_event(self, screen, event):
+        # Centralized event dispatcher
         mouse_pos = pygame.mouse.get_pos()
 
+        # Handle pause button
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.battle.pause_button_rect.collidepoint(mouse_pos):
                 if not self.battle.paused:
@@ -179,9 +198,11 @@ class EventHandler:
                     self.battle.timer.resume()
                     self.battle.paused = False
 
+        # Skip interaction if paused
         if self.battle.paused:
             return
 
+        # Mouse click actions
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.handle_deploy_click(screen, mouse_pos):
                 return
@@ -191,5 +212,6 @@ class EventHandler:
             else:
                 self.handle_character_selection(mouse_pos)
 
+        # Unit placement on mouse release
         elif event.type == pygame.MOUSEBUTTONUP:
             self.handle_unit_placement(mouse_pos)
