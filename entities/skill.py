@@ -80,7 +80,6 @@ class TwinStrike(SkillBehavior):
         return "assets/image/skill3.png"
 
     def trigger_skill(self, ai: CharacterAI):
-        print("yes")
         ai.atk += ai.entity.atk * 0.2
         if hasattr(ai, "count"):
             ai.duration = 3600

@@ -160,9 +160,9 @@ class BattleManager:
 
         self.map.draw(screen)
         self.draw_characters_in_corner(screen)
-        self.event_handler.draw_selected_unit_ui(screen)
         for AI in self.AIs:
             AI.draw(screen)
+        self.event_handler.draw_selected_unit_ui(screen)
         if self.dragging_unit:
             mouse_pos = pygame.mouse.get_pos()
             pos = pygame.Vector2(mouse_pos) - self.drag_offset

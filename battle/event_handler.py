@@ -10,26 +10,39 @@ class EventHandler:
         self.battle = battle_manager
 
     def draw_selected_unit_ui(self, screen):
-        if self.battle.selected_unit_ai:
+        if self.battle.selected_unit_ai and not self.battle.selected_unit_ai.dead:
             unit = self.battle.selected_unit_ai
             ux, uy = int(unit.position.x), int(unit.position.y)
+            screen_width, screen_height = pygame.display.get_surface().get_size()
+            button_width, button_height = 50, 20
+
+            btn_x = ux + TILE_SIZE
+            btn_y_retreat = uy + TILE_SIZE
+            btn_y_skill = uy
+
+            if btn_x + button_width > screen_width:
+                btn_x = ux - button_width
+
+            if btn_y_retreat + button_height > screen_height:
+                btn_y_retreat = uy - button_height
+
+            if btn_y_skill < 0:
+                btn_y_skill = uy + TILE_SIZE
 
             if unit.range > 0:
                 center = (ux + TILE_SIZE // 2, uy + TILE_SIZE // 2)
                 radius = unit.range * TILE_SIZE
-                pygame.draw.circle(screen, (255, 0, 0), center, radius, 1)  # 红色圆圈，线宽为1像素
+                pygame.draw.circle(screen, (255, 0, 0), center, radius, 1)
 
             font = pygame.font.SysFont(None, 20)
             retreat_text = font.render("Retreat", True, (255, 255, 255))
-            screen.blit(retreat_text, (ux + TILE_SIZE, uy + TILE_SIZE))
+            screen.blit(retreat_text, (btn_x, btn_y_retreat))
 
-            if hasattr(unit, "skill"):
-                if unit.skill is not None:
-                    icon_path = unit.skill.icon
-                    icon_image = pygame.image.load(icon_path).convert_alpha()
-                    icon_size = (32, 32)
-                    icon_image = pygame.transform.smoothscale(icon_image, icon_size)
-                    screen.blit(icon_image, (ux + TILE_SIZE, uy))
+            if hasattr(unit, "skill") and unit.skill is not None:
+                icon_path = unit.skill.icon
+                icon_image = pygame.image.load(icon_path).convert_alpha()
+                icon_image = pygame.transform.smoothscale(icon_image, (32, 32))
+                screen.blit(icon_image, (btn_x, btn_y_skill))
 
     def draw_dragged_unit_range(self, screen):
         if self.battle.dragging_unit and self.battle.dragging_unit.range > 0:
@@ -78,26 +91,41 @@ class EventHandler:
                 break
 
     def handle_unit_buttons(self, mouse_pos):
-        if not self.battle.selected_unit_ai:
+        if not self.battle.selected_unit_ai or self.battle.selected_unit_ai.dead:
             return
 
-        ux, uy = int(self.battle.selected_unit_ai.position.x), int(self.battle.selected_unit_ai.position.y)
+        unit = self.battle.selected_unit_ai
+        ux, uy = int(unit.position.x), int(unit.position.y)
+        screen_width, screen_height = pygame.display.get_surface().get_size()
+        button_width, button_height = 50, 20
 
-        retreat_rect = pygame.Rect(ux + TILE_SIZE, uy + TILE_SIZE, 50, 20)
-        skill_rect = pygame.Rect(ux + TILE_SIZE, uy, 50, 20)
+        btn_x = ux + TILE_SIZE
+        btn_y_retreat = uy + TILE_SIZE
+        btn_y_skill = uy
+
+        if btn_x + button_width > screen_width:
+            btn_x = ux - button_width
+
+        if btn_y_retreat + button_height > screen_height:
+            btn_y_retreat = uy - button_height
+
+        if btn_y_skill < 0:
+            btn_y_skill = uy + TILE_SIZE
+
+        retreat_rect = pygame.Rect(btn_x, btn_y_retreat, button_width, button_height)
+        skill_rect = pygame.Rect(btn_x, btn_y_skill, button_width, button_height)
 
         if retreat_rect.collidepoint(mouse_pos):
-            self.battle.selected_unit_ai.dead = True
-            self.battle.selected_unit_ai.is_dead()
-            self.battle.selected_unit_ai.death_time = self.battle.timer.time()
+            unit.dead = True
+            unit.is_dead()
+            unit.death_time = self.battle.timer.time()
             self.battle.selected_unit_ai = None
             return
 
         elif skill_rect.collidepoint(mouse_pos):
-            if self.battle.selected_unit_ai.skill is not None:
-                if self.battle.selected_unit_ai.in_cd > self.battle.selected_unit_ai.cd:
-                    self.battle.selected_unit_ai.trigger_skill()
-                    return
+            if unit.skill is not None and unit.in_cd > unit.cd:
+                unit.trigger_skill()
+                return
 
     def handle_unit_placement(self, mouse_pos):
         if not self.battle.dragging_unit:

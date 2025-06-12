@@ -112,7 +112,6 @@ class BossAI(NormalAI):
         self.ultimate = False
         self.ultimate_triggered = False
         self.ultimate_trigger_time = None
-        self.grid_passed = 0
 
     def be_controlled(self, time):
         pass
@@ -128,7 +127,7 @@ class BossAI(NormalAI):
                 self.normal_attack(target)
             if self.blocked:
                 for unit in units:
-                    if self.position.distance_to(unit) < self.range * TILE_SIZE:
+                    if self.position.distance_to(unit.position) < self.range * TILE_SIZE:
                         unit.be_controlled(1)
 
     def update(self, units):
@@ -136,20 +135,19 @@ class BossAI(NormalAI):
         self.is_blocked()
         if self.is_dead():
             return
-        if self.position.x > (self.grid_passed + 1) * 80:
-            self.manager.map.layout[3][self.grid_passed] = 3
-            self.grid_passed += 1
         if self.hp <= self.entity.hp * 0.5 and not self.ultimate:
             self.ultimate = True
             self.ultimate_triggered = True
             self.ultimate_trigger_time = self.timer.time()
-            self.atk_spd = 1
-            self.atk = 1000
+            self.atk_spd = 1.5
+            self.atk = 400
         if self.ultimate_triggered:
             if self.timer.time() - self.ultimate_trigger_time > 10:
                 self.ultimate_triggered = False
                 self.atk_spd = self.entity.attack_speed
                 self.atk = self.entity.atk
         self.perform_attack(units)
+        self.update_attack_animation()
         if not self.blocked and not self.ultimate_triggered:
             self.move()
+        self.last_update = self.timer.time()

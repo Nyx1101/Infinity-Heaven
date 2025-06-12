@@ -1,3 +1,4 @@
+import utility.data
 from UI.screens.main_menu import MainMenuScreen
 from UI.screens.stage_select import StageSelectScreen
 from UI.screens.battle import BattleScreen
@@ -65,7 +66,10 @@ class ScreenManager:
 
         # Handle background music switching
         if id == 1:
-            self.audio.play_music("battle_bgm.mp3")
+            if utility.data.CURRENT_STAGE == 7:
+                self.audio.play_music("boss_bgm.mp3")
+            else:
+                self.audio.play_music("battle_bgm.mp3")
         elif self.current is None or self.current.screen_id == 1:
             self.audio.play_music("menu_bgm.mp3")
 

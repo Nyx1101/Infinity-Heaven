@@ -70,10 +70,15 @@ class CharacterAI(BaseAI):
         if self.is_controlled():
             return
         self.perform_attack(units)
+        self.update_attack_animation()
 
     def draw(self, screen):
         if not self.dead:
-            screen.blit(self.sprite, self.position)
+            if self.playing_attack_anim:
+                frame = self.attack_frames[self.attack_frame_index]
+                screen.blit(frame, self.position)
+            else:
+                screen.blit(self.sprite, self.position)
 
             bar_width = 50
             bar_height = 5
@@ -96,14 +101,11 @@ class CharacterAI(BaseAI):
 
             if self.skill_triggered:
                 elapsed = now - self.skill_start_time
-                print(elapsed)
                 if self.duration > 0:
                     ratio = max(0, 1 - elapsed / self.duration)
                     width = int(bar_width * ratio)
                     pygame.draw.rect(screen, (255, 165, 0),
                                      (x + bar_width - width, skill_y, width, bar_height))
-                    print(
-                        f"skill_triggered: {self.skill_triggered}, now: {now}, start: {self.skill_start_time}, elapsed: {elapsed}, duration: {self.duration}, ratio: {ratio}, width: {width}")
 
             elif now - self.skill_end_time < self.cd:
                 cd_elapsed = now - self.skill_end_time
