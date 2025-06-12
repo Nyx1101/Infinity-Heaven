@@ -232,3 +232,4 @@ class BaseAI:
         hp_ratio = max(self.hp / self.entity.hp, 0)
         green_width = int(bar_width * hp_ratio)
         pygame.draw.rect(screen, (0, 255, 0), (x, y, green_width, bar_height))
+        
